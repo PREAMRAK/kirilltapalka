@@ -8,7 +8,7 @@ import {Image} from "@nextui-org/image";
 import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
 
 export default function Home() {
-    const app = useContext(webAppContext);
+    // const app = useContext(webAppContext);
 
     // const [isMobile, setIsMobile] = useState(false);
     //
@@ -31,11 +31,11 @@ export default function Home() {
 
     return (
         <>
-            {app.version ? (
+            {/*{app.version ? (*/}
                 <CoinMania/>
-            ) : (
-                <div> Загрузка </div>
-            )}
+            {/*) : (*/}
+            {/*    <div> Загрузка </div>*/}
+            {/*)}*/}
         </>
     );
 }

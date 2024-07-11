@@ -27,22 +27,22 @@ const Leaderboard = () => {
     const app = useContext(webAppContext);
 
     return (
-        <div className="bg-black min-h-svh flex flex-col items-center justify-center text-white p-4">
-            <div className="w-full max-w-md mx-auto bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="bg-black flex min-h-svh flex-col items-center justify-center text-white p-4">
+            <div className="w-full max-w-md flex-col flex  gap-4 mx-auto bg-gradient-to-r from-black to-zinc-950 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
                 <Header />
 
                 <div className="p-4 text-center">
-                    <h1 className="text-2xl font-bold text-red-600">ТОП ИГРОКОВ</h1>
+                    <h1 className="text-2xl font-bold text-white">🏆 ТОП ИГРОКОВ</h1>
                 </div>
                 <div>
                     {users.map((user, index) => (
                         <div
                             key={index}
                             className={`p-4 flex justify-between items-center ${
-                                index === 0 ? 'bg-yellow-500' :
-                                    index === 1 ? 'bg-gray-400' :
-                                        'bg-purple-500'
-                            } ${index < 3 ? '' : 'bg-gradient-to-r from-purple-500 to-blue-500'} text-white m-2 rounded-lg`}
+                                index === 0 ? 'bg-gradient-to-r from-yellow-500 to-gray-900' :
+                                    index === 1 ? 'bg-gradient-to-r from-red-700 to-gray-900' :
+                                        'bg-gradient-to-r from-blue-700 to-gray-900'
+                            } ${index < 3 ? '' : 'bg-gradient-to-r from-blue-900 to-gray-900'} text-white m-2 rounded-lg`}
                         >
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
@@ -59,8 +59,8 @@ const Leaderboard = () => {
                     ))}
                 </div>
 
-                <div className="p-4">
-                    <button className="bg-yellow-600 text-white py-2 px-4 rounded-full w-full">Мой рейтинг</button>
+                <div className="p-2">
+                    <button className="bg-gradient-to-r from-yellow-400 to-yellow-800 text-white py-2 rounded-lg w-full">Мой рейтинг</button>
                 </div>
             </div>
         </div>

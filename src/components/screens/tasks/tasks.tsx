@@ -1,3 +1,5 @@
+"use client";
+
 import React, {useContext} from 'react';
 import Header from "@/components/header/header";
 import {webAppContext} from "@/app/context";
@@ -29,17 +31,16 @@ const Tasks = () => {
 
     return (
         <div className="bg-black min-h-svh flex flex-col items-center justify-center text-white p-4">
-            <div className="w-full max-w-md mx-auto bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+            <div className="w-full max-w-md flex-col flex gap-4 mx-auto bg-gradient-to-r from-black to-zinc-950 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
                 <Header />
 
-
                 <div className="p-4 text-center">
-                    <h1 className="text-2xl font-bold text-red-600">ЗАДАНИЯ</h1>
+                    <h1 className="text-2xl font-bold text-white">📱 ЗАДАНИЯ</h1>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mb-4">
+                <div className="p-4 bg-gradient-to-r from-blue-900 to-gray-900 rounded-lg mb-4">
                     <h2 className="text-lg font-bold">Подписаться на Telegram</h2>
                     {telegramTasks.map((task, index) => (
-                        <div key={index} className="flex justify-between items-center bg-purple-700 p-2 rounded-lg mt-2">
+                        <div key={index} className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mt-2">
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                                 <div className="ml-4">
@@ -53,10 +54,10 @@ const Tasks = () => {
                         </div>
                     ))}
                 </div>
-                <div className="p-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mb-4">
+                <div className="p-4 bg-gradient-to-r from-red-900 to-black rounded-lg mb-4">
                     <h2 className="text-lg font-bold">Подписаться на Instagram</h2>
                     {instagramTasks.map((task, index) => (
-                        <div key={index} className="flex justify-between items-center bg-purple-700 p-2 rounded-lg mt-2">
+                        <div key={index} className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mt-2">
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                                 <div className="ml-4">
@@ -72,15 +73,12 @@ const Tasks = () => {
                         </div>
                     ))}
                 </div>
-                <div className="p-4 bg-green-500 rounded-lg mb-4">
-                    <h2 className="text-lg font-bold">{dailyTask.name}</h2>
-                    <div className="flex justify-between items-center mt-2">
-                        <p>{dailyTask.description}</p>
-                        <p className="text-yellow-300">{dailyTask.reward} ⭐</p>
+                <div className="p-4 bg-gradient-to-r from-green-900 to-black rounded-lg mb-4">
+                    <h2 className="text-xl font-bold mx-auto justify-center flex">☀️ {dailyTask.name}</h2>
+                    <div className="flex-row justify-center gap-2">
+                        <button className="bg-gradient-to-r from-red-600 to-red-950 text-white font-black py-2 my-2 rounded-md w-full hover:bg-red-700">Активировать бустер</button>
+                        <p className="text-yellow-300 justify-center flex">{dailyTask.reward} ⭐</p>
                     </div>
-                </div>
-                <div className="p-4 text-center">
-                    <button className="bg-gray-600 text-white py-2 px-4 rounded-full">Вернуться в игру</button>
                 </div>
             </div>
         </div>
