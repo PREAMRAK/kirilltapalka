@@ -37,47 +37,40 @@ const Tasks = () => {
                 <div className="p-4 text-center">
                     <h1 className="text-2xl font-bold text-white">📱 ЗАДАНИЯ</h1>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-blue-900 to-gray-900 rounded-lg mb-4">
+                <div className="p-2 bg-gradient-to-r from-blue-900 to-gray-900 rounded-lg mb-4">
                     <h2 className="text-lg font-bold">Подписаться на Telegram</h2>
                     {telegramTasks.map((task, index) => (
-                        <div key={index} className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mt-2">
-                            <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                                <div className="ml-4">
-                                    <p className="font-bold">{task.name}</p>
-                                </div>
+                        <div key={index} className="flex flex-col items-center text-center bg-zinc-950 p-2 rounded-lg mt-2">
+                            <div className="flex items-center mb-2">
+                                <p className="font-bold">{task.name}</p>
                             </div>
-                            <div className="flex items-center">
-                                <p className="mr-2">{task.reward} ⭐</p>
-                                <button className="bg-yellow-500 text-black py-1 px-3 rounded-lg">Подписаться</button>
-                            </div>
+                            <p className="mb-2">{task.reward} ⭐</p>
+                            <button className={`py-1 px-3 rounded-lg w-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'}`}>
+                                {task.status === 'completed' ? 'Выполнено' : 'Подписаться'}
+                            </button>
                         </div>
                     ))}
                 </div>
-                <div className="p-4 bg-gradient-to-r from-red-900 to-black rounded-lg mb-4">
+                <div className="p-2 bg-gradient-to-r from-red-900 to-black rounded-lg mb-4">
                     <h2 className="text-lg font-bold">Подписаться на Instagram</h2>
                     {instagramTasks.map((task, index) => (
-                        <div key={index} className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mt-2">
-                            <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                                <div className="ml-4">
-                                    <p className="font-bold">{task.name}</p>
-                                </div>
+                        <div key={index} className="flex flex-col items-center text-center bg-zinc-950 p-2 rounded-lg mt-2">
+                            <div className="flex items-center mb-2">
+                                <p className="font-bold">{task.name}</p>
                             </div>
-                            <div className="flex items-center">
-                                <p className="mr-2">{task.reward} ⭐</p>
-                                <button className={`py-1 px-3 rounded-lg ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'}`}>
-                                    {task.status === 'completed' ? 'Выполнено' : 'Подписаться'}
-                                </button>
-                            </div>
+                            <p className="mb-2">{task.reward} ⭐</p>
+                            <button className={`py-1 px-3 rounded-lg w-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'}`}>
+                                {task.status === 'completed' ? 'Выполнено' : 'Подписаться'}
+                            </button>
                         </div>
                     ))}
                 </div>
                 <div className="p-4 bg-gradient-to-r from-green-900 to-black rounded-lg mb-4">
                     <h2 className="text-xl font-bold mx-auto justify-center flex">☀️ {dailyTask.name}</h2>
-                    <div className="flex-row justify-center gap-2">
+                    <div className="flex flex-col items-center">
+                        <p className="text-center mb-2">{dailyTask.description}</p>
+                        <p className="text-yellow-300 mb-2">{dailyTask.reward} ⭐</p>
                         <button className="bg-gradient-to-r from-red-600 to-red-950 text-white font-black py-2 my-2 rounded-md w-full hover:bg-red-700">Активировать бустер</button>
-                        <p className="text-yellow-300 justify-center flex">{dailyTask.reward} ⭐</p>
                     </div>
                 </div>
             </div>

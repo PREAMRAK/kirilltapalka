@@ -23,12 +23,12 @@ const CoinMania = () => {
                             <span className="text-white text-3xl ml-2">{points}</span>
                         </div>
 
-                            <button
-                                className="mt-4 p-4 text-white rounded-full transform active:scale-95"
-                                onClick={() => setPoints(points + 1)}
-                            >
-                                <img src="/coin.svg" alt="Coin SVG" className="mx-auto" />
-                            </button>
+                        <button
+                            className="mt-4 p-4 text-white rounded-full transform active:scale-95"
+                            onClick={() => setPoints(points + 1)}
+                        >
+                            <img src="/coin.svg" width={200} alt="Coin SVG" className="mx-auto" />
+                        </button>
 
                         <div className="w-full text-center z-10">
                             <img src="/shadow.svg" alt="Shadow SVG" className="mx-auto" />

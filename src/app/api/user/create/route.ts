@@ -15,7 +15,8 @@ POST http://localhost:3000/api/user/create
  */
 export async function POST(req: NextRequest) {
     try {
-        const { id, first_name, last_name, username,referal_id } = await req.json();
+        // const { id, first_name, last_name, username, referal_id } = await req.json();
+        const { id, first_name, last_name, username, referal_id } = await req.json();
 
         if (!id || !username || !first_name) {
             return NextResponse.json({ error: "Invalid input data" }, { status: 400 });
@@ -39,14 +40,14 @@ export async function POST(req: NextRequest) {
                 .from('users')
                 .insert([{
                     id: id,
-                    first_name:first_name,
+                    first_name: first_name,
                     last_name: last_name,
                     scores: 0,
                     username: username,
                     referal_id: referal_id,
 
                 }]);
-            update_points(referal_id, 10000)
+            // update_points(referal_id, 10000)
             if (insertError) {
                 console.error("Failed to insert user:", insertError);
                 return NextResponse.json({ error: "Failed to insert user" }, { status: 500 });
