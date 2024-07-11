@@ -16,20 +16,20 @@ const CoinMania = () => {
         <div className="bg-black flex flex-col min-h-screen items-center justify-center text-white p-2">
             <div className="w-full max-w-md mx-auto bg-gradient-to-r from-black to-zinc-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
                 <div className="p-4 text-center">
-                    <h1 className="text-2xl font-bold text-red-600">VNVNC COIN MANIA</h1>
+                    <h1 className="text-3xl font-bold text-white">VNVNC COIN MANIA</h1>
                     <div className="mt-4">
                         <div className="flex justify-center items-center">
                             <span className="text-yellow-500 text-3xl">⭐</span>
                             <span className="text-white text-3xl ml-2">{points}</span>
                         </div>
-                        <div className="mt-4">
+
                             <button
                                 className="mt-4 p-4 text-white rounded-full transform active:scale-95"
                                 onClick={() => setPoints(points + 1)}
                             >
                                 <img src="/coin.svg" alt="Coin SVG" className="mx-auto" />
                             </button>
-                        </div>
+
                         <div className="w-full text-center z-10">
                             <img src="/shadow.svg" alt="Shadow SVG" className="mx-auto" />
                         </div>
