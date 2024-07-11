@@ -30,7 +30,7 @@ export const WebAppProvider = ({ children }: IProps) => {
             const firstName = app.initDataUnsafe?.user?.first_name;
             const lastName = app.initDataUnsafe?.user?.last_name;
             const scores = Number('0')
-            const referralId = app.initDataUnsafe?.query_id || ''; // Получаем реферальный ID из start_param
+            const referralId = app.initDataUnsafe?.start_param // Получаем реферальный ID из start_param
 
             if (!userId || !username || !firstName) {
                 console.error("User data is missing");
