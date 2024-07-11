@@ -9,7 +9,6 @@ export const webAppContext = createContext<TelegramWebApps.WebApp>({} as Telegra
 
 export const WebAppProvider = ({ children }: IProps) => {
     const [app, setApp] = useState({} as TelegramWebApps.WebApp);
-    const [referralId, setReferralId] = useState<string | null>(null);
 
     useEffect(() => {
         setApp(window.Telegram.WebApp);
