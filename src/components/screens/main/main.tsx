@@ -1,16 +1,71 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import RedeemIcon from '@mui/icons-material/Redeem';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-
-
-import { useState } from 'react';
+import { webAppContext } from "@/app/context";
+import supabase from "@/db/supabase";
 
 const CoinMania = () => {
-
+    const app = useContext(webAppContext);
+    const [userData, setUserData] = useState(null);
     const [points, setPoints] = useState(0);
+    const [energy, setEnergy] = useState(100);
+    const [clickCount, setClickCount] = useState(0);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch(`/api/user/data?id=${app.initDataUnsafe.user?.id}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setUserData(data.user);
+                setPoints(data.user.scores);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [app.initDataUnsafe.user?.id]);
+
+    useEffect(() => {
+        const energyInterval = setInterval(() => {
+            setEnergy(prevEnergy => (prevEnergy < 100 ? prevEnergy + 1 : prevEnergy));
+        }, 1000);
+
+        return () => clearInterval(energyInterval);
+    }, []);
+
+    const handleButtonClick = async () => {
+        if (energy <= 0) return;
+
+        setPoints(prevPoints => prevPoints + 1);
+        setEnergy(prevEnergy => prevEnergy - 1);
+        setClickCount(prevCount => prevCount + 1);
+
+        if ((clickCount + 1) % 10 === 0) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .update({ scores: points + 1 })
+                    .eq('id', app.initDataUnsafe.user?.id);
+
+                if (error) {
+                    throw error;
+                }
+            } catch (error) {
+                setError(error.message);
+            }
+        }
+    };
 
     return (
         <div className="bg-black flex flex-col min-h-screen items-center justify-center text-white p-2">
@@ -25,7 +80,7 @@ const CoinMania = () => {
 
                         <button
                             className="mt-4 p-4 text-white rounded-full transform active:scale-95"
-                            onClick={() => setPoints(points + 1)}
+                            onClick={handleButtonClick}
                         >
                             <img src="/coin.svg" width={200} alt="Coin SVG" className="mx-auto" />
                         </button>
@@ -34,9 +89,9 @@ const CoinMania = () => {
                             <img src="/shadow.svg" alt="Shadow SVG" className="mx-auto" />
                         </div>
                         <div className="mt-4">
-                            <p className="text-white text-xl">1,000 Party Power</p>
+                            <p className="text-white text-xl">Energy: {energy}</p>
                             <div className="w-full bg-gray-700 h-2 rounded-full mt-2">
-                                <div className="bg-yellow-500 h-full rounded-full" style={{ width: '100%' }}></div>
+                                <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${energy}%` }}></div>
                             </div>
                         </div>
                     </div>
@@ -64,11 +119,10 @@ const CoinMania = () => {
                         <Link href="/profile" passHref className="flex-1">
                             <button className="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-2 rounded-lg w-full h-full flex flex-col items-center justify-center">
                                 <PeopleAltIcon className="mb-1" />
-                                Invite
+                                More
                             </button>
                         </Link>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -76,4 +130,3 @@ const CoinMania = () => {
 };
 
 export default CoinMania;
-

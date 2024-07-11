@@ -66,10 +66,10 @@ const Profile = () => {
                     </div>
                 </div>
 
-                <div className="p-4 relative rounded-lg bg-gradient-to-r from-green-900 to-black">
-                    <div className="mt-6 flex bg-black rounded-md">
-                        <p className="text-yellow-500 mx-auto font-black my-auto text-2xl">COMING SOON</p>
-                    </div>
+                <div className="mt-6 flex-row flex bg-black rounded-md">
+                    <p className="text-yellow-500 mx-auto font-black my-auto text-sm">
+                        https://t.me/paitestbotbot/test1?referral_id={app.initDataUnsafe.user?.id}
+                    </p>
                 </div>
 
                 {/*<div className="min-h-[100px] p-4 relative rounded-lg" style={{ backgroundImage: "url('/comingsoon.svg')" }}>*/}
