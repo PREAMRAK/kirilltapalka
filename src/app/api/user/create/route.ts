@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
                     referal_id: referal_id,
 
                 }]);
-            // update_points(referal_id, 10000)
+            update_points(referal_id, 10000)
             if (insertError) {
                 console.error("Failed to insert user:", insertError);
                 return NextResponse.json({ error: "Failed to insert user" }, { status: 500 });
