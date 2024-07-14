@@ -7,3 +7,40 @@
     margin: 0;
     box-sizing: border-box;
 }
+
+.highlight {
+    border: 2px solid blue;
+}
+
+@keyframes scroll {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100%); }
+}
+
+.animate-scroll {
+    animation: scroll 1s linear infinite;
+}
+
+.slot-machine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 192px; /* 3 ряда по 64px */
+    overflow: hidden;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+.slot-machine div {
+    height: 64px; /* Высота одного ряда */
+    width: 64px; /* Ширина одного эмодзи */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-machine .highlight {
+    border: 2px solid blue;
+    border-radius: 8px;
+}

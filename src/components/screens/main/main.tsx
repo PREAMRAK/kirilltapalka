@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import RedeemIcon from '@mui/icons-material/Redeem';
@@ -6,6 +8,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { webAppContext } from "@/app/context";
 import supabase from "@/db/supabase";
+import styles from './CoinMania.module.css';
 
 const CoinMania = () => {
     const app = useContext(webAppContext);
@@ -15,17 +18,22 @@ const CoinMania = () => {
     const [clickCount, setClickCount] = useState(0);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [clickEffects, setClickEffects] = useState([]);
+    const [isCoinPressed, setIsCoinPressed] = useState(false);
+    const [boosterMultiplier, setBoosterMultiplier] = useState(1);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`/api/user/data?id=${app.initDataUnsafe.user?.id}`);
+                const response = await fetch(`/api/user/checkbooster?id=${app.initDataUnsafe.user?.id}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
+                console.log('User data fetched:', data); // Логирование данных пользователя
                 setUserData(data.user);
                 setPoints(data.user.scores);
+                updateBoosterMultiplier(data.user.booster_x2, data.user.booster_x3, data.user.booster_x5);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -37,6 +45,26 @@ const CoinMania = () => {
     }, [app.initDataUnsafe.user?.id]);
 
     useEffect(() => {
+        const savedEnergy = localStorage.getItem('energy');
+        const lastExitTime = localStorage.getItem('lastExitTime');
+
+        if (savedEnergy !== null) {
+            let accumulatedEnergy = Number(savedEnergy);
+
+            if (lastExitTime !== null) {
+                const currentTime = new Date().getTime();
+                const timeDifference = (currentTime - Number(lastExitTime)) / 1000; // разница в секундах
+                accumulatedEnergy += Math.floor(timeDifference); // энергия растет на 1 каждую секунду
+                if (accumulatedEnergy > 100) {
+                    accumulatedEnergy = 100;
+                }
+            }
+
+            setEnergy(accumulatedEnergy);
+        }
+    }, []);
+
+    useEffect(() => {
         const energyInterval = setInterval(() => {
             setEnergy(prevEnergy => (prevEnergy < 100 ? prevEnergy + 1 : prevEnergy));
         }, 1000);
@@ -44,18 +72,75 @@ const CoinMania = () => {
         return () => clearInterval(energyInterval);
     }, []);
 
-    const handleButtonClick = async () => {
+    useEffect(() => {
+        const boosterInterval = setInterval(() => {
+            if (userData) {
+                updateBoosterMultiplier(userData.booster_x2, userData.booster_x3, userData.booster_x5);
+            }
+        }, 10000); // Проверка каждые 10 секунд
+
+        return () => clearInterval(boosterInterval);
+    }, [userData]);
+
+    useEffect(() => {
+        const saveEnergyAndTime = () => {
+            localStorage.setItem('energy', String(energy));
+            localStorage.setItem('lastExitTime', String(new Date().getTime()));
+        };
+
+        const interval = setInterval(saveEnergyAndTime, 5000); // Сохранение каждые 5 секунд
+
+        return () => clearInterval(interval);
+    }, [energy]);
+
+    const updateBoosterMultiplier = (booster_x2, booster_x3, booster_x5) => {
+        let activeMultiplier = 1;
+
+        const boosterEndTimes = [
+            { endTime: new Date(booster_x2), multiplier: 2 },
+            { endTime: new Date(booster_x3), multiplier: 3 },
+            { endTime: new Date(booster_x5), multiplier: 5 }
+        ];
+
+        boosterEndTimes.forEach(({ endTime, multiplier }) => {
+            if (endTime > new Date()) {
+                activeMultiplier = multiplier;
+            }
+        });
+
+        console.log('Active multiplier:', activeMultiplier);
+        setBoosterMultiplier(activeMultiplier);
+    };
+
+    const handleButtonClick = async (event) => {
         if (energy <= 0) return;
 
-        setPoints(prevPoints => prevPoints + 1);
+        const { clientX, clientY } = event;
+        const newClickEffect = {
+            id: Date.now(),
+            x: clientX,
+            y: clientY,
+        };
+        setClickEffects((prevEffects) => [...prevEffects, newClickEffect]);
+
+        setTimeout(() => {
+            setClickEffects((prevEffects) => prevEffects.filter(effect => effect.id !== newClickEffect.id));
+        }, 1000); // Эффект будет виден 1 секунду
+
+        const pointsToAdd = boosterMultiplier;
+        console.log('Booster multiplier:', boosterMultiplier, 'Points to add:', pointsToAdd);
+        setPoints(prevPoints => prevPoints + pointsToAdd);
         setEnergy(prevEnergy => prevEnergy - 1);
         setClickCount(prevCount => prevCount + 1);
+
+        setIsCoinPressed(true);
+        setTimeout(() => setIsCoinPressed(false), 300); // Длительность анимации совпадает с её временем
 
         if ((clickCount + 1) % 10 === 0) {
             try {
                 const { error } = await supabase
                     .from('users')
-                    .update({ scores: points + 1 })
+                    .update({ scores: points + pointsToAdd })
                     .eq('id', app.initDataUnsafe.user?.id);
 
                 if (error) {
@@ -68,8 +153,8 @@ const CoinMania = () => {
     };
 
     return (
-        <div className="bg-black flex flex-col min-h-screen items-center justify-center text-white p-2">
-            <div className="w-full max-w-md mx-auto bg-gradient-to-r from-black to-zinc-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="bg-black flex flex-col min-h-screen items-center justify-center text-white p-2 select-none">
+            <div className="w-full max-w-md mx-auto bg-gradient-to-r from-black to-zinc-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl relative">
                 <div className="p-4 text-center">
                     <h1 className="text-3xl font-bold text-white">VNVNC COIN MANIA</h1>
                     <div className="mt-4">
@@ -79,8 +164,9 @@ const CoinMania = () => {
                         </div>
 
                         <button
-                            className="mt-4 p-4 text-white rounded-full transform active:scale-95"
+                            className={`mt-4 p-4 text-white rounded-full transform active:scale-95 ${isCoinPressed ? styles.coinPress : ''}`}
                             onClick={handleButtonClick}
+                            onTouchStart={handleButtonClick}
                         >
                             <img src="/coin.svg" width={200} alt="Coin SVG" className="mx-auto" />
                         </button>
@@ -124,6 +210,15 @@ const CoinMania = () => {
                         </Link>
                     </div>
                 </div>
+                {clickEffects.map(effect => (
+                    <div
+                        key={effect.id}
+                        className="absolute text-white text-xl font-thin animate-ping pointer-events-none select-none"
+                        style={{ top: effect.y - 40, left: effect.x + 20 }}
+                    >
+                        +{boosterMultiplier}
+                    </div>
+                ))}
             </div>
         </div>
     );

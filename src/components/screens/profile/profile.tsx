@@ -53,7 +53,6 @@ const Profile = () => {
                 <div className="md:flex">
                     <div className="p-8 bg-gradient-to-r from-zinc-950 to-gray-900 w-full rounded-lg">
                         <div className="uppercase tracking-wide text-indigo-500 text-2xl font-black">{app.initDataUnsafe.user?.first_name}</div>
-                        {/*<p className="block mt-1 text-md leading-tight font-medium text-yellow-500">Король Виновницы</p>*/}
                         <p className="mt-2 text-gray-300 text-md">{userData?.scores} ⭐</p>
                     </div>
                 </div>

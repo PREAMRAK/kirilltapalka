@@ -1,10 +1,20 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import Header from "@/components/header/header";
-import {webAppContext} from "@/app/context";
+import { webAppContext } from "@/app/context";
+import Slots from "@/components/screens/bonus/slots/Slots";
 
 const Bonuses = () => {
-
     const app = useContext(webAppContext);
+
+    const buyBooster = async (boosterType) => {
+        const response = await fetch(`/api/util/buy_booster?userid=${app.initDataUnsafe.user?.id}&boosterType=${boosterType}`);
+        const data = await response.json();
+        if (data.success) {
+            alert(`Booster ${boosterType} purchased until ${new Date(data.endTime).toLocaleTimeString()}`);
+        } else {
+            alert(data.error || "Failed to purchase booster");
+        }
+    };
 
     return (
         <div className="bg-black flex min-h-svh flex-col items-center justify-center text-white p-4">
@@ -23,22 +33,15 @@ const Bonuses = () => {
 
                     {/* ДЖЕКПОТ */}
                     <div className="bg-gradient-to-r from-red-900 to-black text-white rounded-lg p-4 mb-4">
-                        <h2 className="text-lg font-bold text-center">🎰 VNVNC Слоты</h2>
-                        <div className="flex justify-center my-2">
-                            <span className="mx-1">🎉</span>
-                            <span className="mx-1">🎊</span>
-                            <span className="mx-1">💃</span>
-                        </div>
-                        <button className="bg-gradient-to-bl w-full from-red-900 to-red-600 text-white py-2 px-4 rounded-lg mt-2">Крутить (2 осталось)</button>
+                        <Slots userId={app.initDataUnsafe.user?.id} />
                     </div>
-
 
                     <div className="bg-gradient-to-r from-green-900 to-black text-white rounded-lg p-4 mb-4">
                         <h2 className="text-lg font-bold text-center">🎁 Бустеры</h2>
                         <div className="mt-2">
-                            <button className="bg-gradient-to-bl from-green-900 to-green-800 w-full text-white py-2 px-4 rounded-lg mt-2">x2 на 30 минут <br/>(1000 ⭐)</button>
-                            <button className="bg-gradient-to-bl from-green-900 to-green-700 w-full text-white py-2 px-4 rounded-lg mt-2">x3 на 15 минут <br/>(2500 ⭐)</button>
-                            <button className="bg-gradient-to-bl from-green-900 to-green-600 w-full text-white py-2 px-4 rounded-lg mt-2">x5 на 5 минут <br/>(5000 ⭐)</button>
+                            <button onClick={() => buyBooster('x2')} className="bg-gradient-to-bl from-green-900 to-green-800 w-full text-white py-2 px-4 rounded-lg mt-2">x2 на 30 минут <br />(1000 ⭐)</button>
+                            <button onClick={() => buyBooster('x3')} className="bg-gradient-to-bl from-green-900 to-green-700 w-full text-white py-2 px-4 rounded-lg mt-2">x3 на 15 минут <br />(2500 ⭐)</button>
+                            <button onClick={() => buyBooster('x5')} className="bg-gradient-to-bl from-green-900 to-green-600 w-full text-white py-2 px-4 rounded-lg mt-2">x5 на 5 минут <br />(5000 ⭐)</button>
                         </div>
                     </div>
                 </div>
