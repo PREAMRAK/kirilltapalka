@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from "@/db/supabase";
-import update_points from "@/app/api/util/add_points";
+import increase_max_energy from "@/app/api/util/add_energy";
 
 /*
 POST http://localhost:3000/api/user/create
 {
-	"id": 1489,
-	"first_name":"gay",
-	"last_name": "orgy",
-	"username": "GAPYEAR",
-	"scores": 1,
-	"referal_id": 123
+    "id": 1489,
+    "first_name":"gay",
+    "last_name": "orgy",
+    "username": "GAPYEAR",
+    "scores": 1,
+    "referal_id": 123
 }
- */
+*/
+
 export async function POST(req: NextRequest) {
     try {
-        // const { id, first_name, last_name, username, referal_id } = await req.json();
         const { id, first_name, last_name, username, referal_id } = await req.json();
 
         if (!id || !username || !first_name) {
@@ -47,10 +47,14 @@ export async function POST(req: NextRequest) {
                     referal_id: referal_id,
 
                 }]);
-            await update_points(referal_id, 10000)
+
             if (insertError) {
                 console.error("Failed to insert user:", insertError);
                 return NextResponse.json({ error: "Failed to insert user" }, { status: 500 });
+            }
+
+            if (referal_id) {
+                await increase_max_energy(referal_id, 500);
             }
 
             return NextResponse.json({ message: "User added successfully" }, { status: 200 });

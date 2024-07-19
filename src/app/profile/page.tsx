@@ -1,12 +1,24 @@
 "use client";
 
-import { useContext } from "react";
+import {useContext, useEffect, useState} from "react";
 import { webAppContext } from "../context";
 import Profile from "@/components/screens/profile/profile"
 import CoinMania from "@/components/screens/main/main";
+import Loader from "@/components/loader/loader";
 
 export default function Home() {
     const app = useContext(webAppContext);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (app.version) {
+            setLoading(false);
+        }
+    }, [app.version]);
+
+    if (loading) {
+        return <Loader loading={loading} />;
+    }
 
     return (
         <>
@@ -23,9 +35,9 @@ export default function Home() {
 
             <>
                 {app.version ? (
-                    <Profile app={app}/>
+                    <Profile />
                 ) : (
-                    <div> Загрузка </div>
+                    <Loader loading={loading} />
                 )}
             </>
         </>

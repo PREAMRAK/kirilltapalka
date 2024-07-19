@@ -1,40 +1,63 @@
-import React, {useContext} from 'react';
-import { ScrollShadow } from "@nextui-org/react";
+import React, { useContext, useEffect, useState } from 'react';
 import Header from "@/components/header/header";
-import {webAppContext} from "@/app/context";
+import { webAppContext } from "@/app/context";
+import Loader from "@/components/loader/loader";
 
 interface User {
-    name: string;
-    title: string;
-    score: number;
+    first_name: string;
+    scores: number;
 }
 
-const users: User[] = [
-    { name: "Иван Петров", title: "Король Виновницы", score: 1500000 },
-    { name: "Анна Сидорова", title: "Доминатор", score: 1400000 },
-    { name: "Алексей Иванов", title: "Повелитель", score: 1300000 },
-    { name: "Мария Козлова", title: "Легенда VNVNC", score: 1200000 },
-    { name: "Дмитрий Смирнов", title: "Миллионер", score: 1100000 },
-    { name: "Елена Новикова", title: "Магнат", score: 1000000 },
-    { name: "Сергей Морозов", title: "Покоритель", score: 900000 },
-    { name: "Ольга Волкова", title: "Звезда андеграунда", score: 800000 },
-    { name: "Артем Соколов", title: "Полуночный тусовщик", score: 700000 },
-    { name: "Наталья Кузнецова", title: "Восходящая звезда", score: 600000 },
-];
-
 const Leaderboard = () => {
-
     const app = useContext(webAppContext);
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            // Добавим тестовых пользователей
+            const testUsers: User[] = [
+                { first_name: "TestUser1", scores: 250 },
+                { first_name: "TestUser2", scores: 200 },
+                { first_name: "TestUser3", scores: 150 },
+                { first_name: "TestUser4", scores: 100 },
+                { first_name: "TestUser5", scores: 50 },
+            ];
+
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+
+                if (data.users) {
+                    const sortedUsers = [...data.users, ...testUsers].sort((a: User, b: User) => b.scores - a.scores);
+                    setUsers(sortedUsers);
+                } else {
+                    setUsers(testUsers);
+                }
+            } catch (error) {
+                setUsers(testUsers);
+                console.error("Failed to fetch users:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    if (loading) {
+        return <Loader loading={loading} />;
+    }
 
     return (
         <div className="bg-black flex min-h-svh flex-col items-center justify-center text-white p-4">
-            <div className="w-full max-w-md flex-col flex  gap-4 mx-auto bg-gradient-to-r from-black to-zinc-950 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+            <div className="w-full max-w-md flex-col flex gap-4 mx-auto bg-gradient-to-r from-black to-zinc-950 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
                 <Header />
 
                 <div className="p-4 text-center">
                     <h1 className="text-2xl font-bold text-white">🏆 ТОП ИГРОКОВ</h1>
                 </div>
-                <div>
+                <div className="h-96 overflow-y-scroll">
                     {users.map((user, index) => (
                         <div
                             key={index}
@@ -45,14 +68,12 @@ const Leaderboard = () => {
                             } ${index < 3 ? '' : 'bg-gradient-to-r from-blue-900 to-gray-900'} text-white m-2 rounded-lg`}
                         >
                             <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                                 <div className="ml-4">
-                                    <p className="font-bold">{index + 1}. {user.name}</p>
-                                    <p className="text-sm">{user.title}</p>
+                                    <p className="font-bold">{index + 1}. {user.first_name}</p>
                                 </div>
                             </div>
                             <div>
-                                <p>{user.score.toLocaleString()}</p>
+                                <p>{user.scores}</p>
                                 <span className="text-yellow-300">⭐</span>
                             </div>
                         </div>

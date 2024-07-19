@@ -5,7 +5,7 @@ import { webAppContext } from "@/app/context";
 import supabase from "@/db/supabase";
 import Loader from "@/components/loader/loader";
 
-import {Button, Link} from "@nextui-org/react"
+import { Button, Link } from "@nextui-org/react";
 
 import TapIcon from '@mui/icons-material/TouchApp';
 import BonusIcon from '@mui/icons-material/CardGiftcard';
@@ -21,6 +21,7 @@ interface UserData {
     booster_x5: string | null;
     energy: number | null;
     last_login_time: string;
+    maxenergy: number; // Добавляем поле maxenergy
 }
 
 type EmojiType = {
@@ -35,7 +36,6 @@ type EmojiType = {
     opacity?: number; // Добавляем opacity
 };
 
-
 type ClickType = {
     id: number;
     x: number;
@@ -43,12 +43,11 @@ type ClickType = {
     value: number; // Добавляем значение для отображения
 };
 
-
 const CoinMania: React.FC = () => {
     const app = useContext(webAppContext);
     const [userData, setUserData] = useState<UserData | null>(null);
     const [points, setPoints] = useState(0);
-    const [energy, setEnergy] = useState(0);
+    const [energy, setEnergy] = useState(1000);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -75,7 +74,7 @@ const CoinMania: React.FC = () => {
 
                 setUserData({ ...data.user });
                 setPoints(data.user.scores ?? 0);
-                setEnergy(data.user.energy);
+                setEnergy(Math.min(data.user.energy ?? 0, data.user.maxenergy)); // Устанавливаем энергию, не превышающую maxenergy
             } catch (error: unknown) {
                 if (error instanceof Error) {
                     setError(error.message);
@@ -110,22 +109,28 @@ const CoinMania: React.FC = () => {
         return () => clearInterval(interval);
     }, [energy]);
 
-    const calculateEnergy = (storedEnergy: number, lastLoginTime: string): number => {
-        const currentTime = new Date().getTime();
-        const timeDifference = (currentTime - new Date(lastLoginTime).getTime()) / 1000;
-        let accumulatedEnergy = storedEnergy + Math.floor(timeDifference);
-        return accumulatedEnergy > storedEnergy ? storedEnergy : accumulatedEnergy;
-    };
-
     const handleButtonClick = async (e: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         if (energy <= 0) return;
 
-        // Определяем значение бустера
-        const booster = userData?.booster_x5 ? 5 : userData?.booster_x3 ? 3 : userData?.booster_x2 ? 2 : 1;
-        const pointsToAdd = 1 * booster; // Значение с учетом бустера
+        // Проверяем время действия бустера
+        const now = new Date();
+        let boosterMultiplier = 1;
+
+        if (userData) {
+            const boosterTypes = ['booster_x2', 'booster_x3', 'booster_x5'] as const;
+            for (const boosterType of boosterTypes) {
+                const boosterEndTime = userData[boosterType];
+                if (boosterEndTime && new Date(boosterEndTime) > now) {
+                    boosterMultiplier = parseInt(boosterType.split('_x')[1]);
+                    break;
+                }
+            }
+        }
+
+        const pointsToAdd = 1 * boosterMultiplier; // Значение с учетом бустера
 
         setPoints(prevPoints => prevPoints + pointsToAdd);
-        setEnergy(prevEnergy => prevEnergy - 1);
+        setEnergy(prevEnergy => Math.min(prevEnergy - 1, userData?.maxenergy ?? 0)); // Уменьшаем энергию, не превышая maxenergy
 
         const rect = coinRef.current?.getBoundingClientRect();
         if (rect) {
@@ -158,7 +163,6 @@ const CoinMania: React.FC = () => {
             }
         }
     };
-
 
     const handleAnimationEnd = (id: number) => {
         setClicks(prevClicks => prevClicks.filter(click => click.id !== id));
@@ -272,14 +276,6 @@ const CoinMania: React.FC = () => {
 
         return () => cancelAnimationFrame(animationFrame);
     }, [lastTapTime]);
-
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setEnergy((prevEnergy) => Math.min(prevEnergy + 1, 6500));
-        }, 800);
-        return () => clearInterval(interval);
-    }, []);
 
     useEffect(() => {
         const preventDefault = (e: Event) => e.preventDefault();
@@ -422,66 +418,68 @@ const CoinMania: React.FC = () => {
                 {/* Блок с энергией */}
                 <div className="fixed bottom-24 w-full z-40">
                     <div className="items-center text-center">
-                        <span
-                            className="text-center mx-auto text-white text-xl font-bold">⚡️{energy} / {energy}</span>
+                        <span className="text-center mx-auto text-white text-xl font-bold">
+                            ⚡️{energy} / {userData?.maxenergy ?? 1000}
+                        </span>
                     </div>
 
                     <div className="w-full bg-[#f9c035] rounded-md items-center px-2 my-2">
                         <div
                             className="bg-gradient-to-r from-[#f3c45a] to-[#fffad0] opacity-10 h-2 rounded-md"
-                            style={{ width: `${(energy / 6500) * 100}%` }}
+                            style={{ width: `${(energy / (userData?.maxenergy ?? 1000)) * 100}%` }}
                         >
                         </div>
                     </div>
                 </div>
 
+
                 {/* Нижний блок меню */}
-                    <div className="fixed bottom-0 w-full z-40 w-full flex justify-between">
-                        <div className="flex-grow flex items-center text-sm">
-                            <div className="w-full bg-gradient-to-b from-zinc-800 to-zinc-950 py-4 flex justify-around">
-                                    <Button className="flex w-1/5 flex-col items-center rounded-t-md gap-1">
-                                        <Link href={'/'}>
-                                        <TapIcon />
-                                        <span>Tap</span>
-                                        </Link>
-                                    </Button>
+                <div className="fixed bottom-0 w-full z-40 w-full flex justify-between">
+                    <div className="flex-grow flex items-center text-sm">
+                        <div className="w-full bg-gradient-to-b from-zinc-800 to-zinc-950 py-4 flex justify-around">
+                            <Button className="flex w-1/5 flex-col items-center rounded-t-md gap-1">
+                                <Link href={'/'}>
+                                    <TapIcon />
+                                    <span>Tap</span>
+                                </Link>
+                            </Button>
 
-                                <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
+                            <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
 
-                                <Button className="flex w-1/5 flex-col items-center gap-1">
-                                    <Link href={'/bonus'}>
+                            <Button className="flex w-1/5 flex-col items-center gap-1">
+                                <Link href={'/bonus'}>
                                     <BonusIcon />
                                     <span>Bonus</span>
-                                    </Link>
-                                </Button>
+                                </Link>
+                            </Button>
 
-                                <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
+                            <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
 
-                                <Button className="flex w-1/5 flex-col items-center gap-1">
-                                    <Link href={'/tasks'}>
+                            <Button className="flex w-1/5 flex-col items-center gap-1">
+                                <Link href={'/tasks'}>
                                     <TasksIcon />
                                     <span>Tasks</span>
-                                    </Link>
-                                </Button>
+                                </Link>
+                            </Button>
 
-                                <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
+                            <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
 
-                                <Button className="flex w-1/5 flex-col items-center gap-1">
-                                    <Link href={'/leaderboard'}>
+                            <Button className="flex w-1/5 flex-col items-center gap-1">
+                                <Link href={'/leaderboard'}>
                                     <TopIcon />
                                     <span>Top</span>
-                                    </Link>
-                                </Button>
+                                </Link>
+                            </Button>
 
-                                <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
+                            <div className="h-[10px] my-auto w-[2px] bg-zinc-600"></div>
 
-                                <Button className="flex w-1/5 flex-col items-center gap-1">
-                                    <Link href={'/profile'}>
+                            <Button className="flex w-1/5 flex-col items-center gap-1">
+                                <Link href={'/profile'}>
                                     <FrensIcon />
                                     <span>Frens</span>
-                                    </Link>
-                                </Button>
-                            </div>
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

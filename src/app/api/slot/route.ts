@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from "@/db/supabase";
 import update_points from "@/app/api/util/add_points";
 
-function weightedRandom(weights) {
+function weightedRandom(weights: number[]): number {
    let sum = weights.reduce((acc, weight) => acc + weight, 0);
    let rand = Math.random() * sum;
    for (let i = 0; i < weights.length; i++) {
       if (rand < weights[i]) {
-         return i + 1; // возврат значения (1, 2, 3, 4, 5)
+         return i + 1; // return value (1, 2, 3, 4, 5)
       }
       rand -= weights[i];
    }
    return weights.length;
 }
 
-const inttoemoji = (value) => {
+const inttoemoji = (value: number): string => {
    switch (value) {
       case 1:
          return "🎉";
@@ -26,10 +26,12 @@ const inttoemoji = (value) => {
          return "🍾";
       case 5:
          return "🥂";
+      default:
+         return "";
    }
 };
 
-export async function GET(req) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
    try {
       const { searchParams } = new URL(req.url);
       const userId = searchParams.get('userid');
@@ -59,14 +61,14 @@ export async function GET(req) {
       const lastSpinTime = user.last_spin_time ? new Date(user.last_spin_time) : new Date(0);
       const spinsToday = user.daily_spin_count;
       const isSameDay = lastSpinTime.toDateString() === now.toDateString();
-      const isWithin24Hours = (now - lastSpinTime) / (1000 * 60 * 60) < 24;
+      const isWithin24Hours = (now.getTime() - lastSpinTime.getTime()) / (1000 * 60 * 60) < 24;
 
       if (isSameDay && spinsToday >= 2) {
          return NextResponse.json({ error: "Daily spin limit reached" }, { status: 400 });
       }
 
       // Determine points and slots
-      const weights = [50, 25, 15, 7, 3]; // веса для каждого результата (1, 2, 3, 4, 5)
+      const weights = [50, 25, 15, 7, 3]; // weights for each result (1, 2, 3, 4, 5)
       const rval1 = weightedRandom(weights);
       const rval2 = weightedRandom(weights);
       const rval3 = weightedRandom(weights);

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, { useContext, useEffect } from 'react';
 import Header from "@/components/header/header";
 import { webAppContext } from "@/app/context";
 import Slots from "@/components/screens/bonus/slots/Slots";
@@ -6,18 +6,29 @@ import Slots from "@/components/screens/bonus/slots/Slots";
 const Bonuses = () => {
     const app = useContext(webAppContext);
 
-    const id = app.initDataUnsafe.user?.id
+    const id = app.initDataUnsafe.user?.id;
+
     useEffect(() => {
         console.log("App data:", app);
     }, [app]);
 
-    const buyBooster = async (boosterType) => {
-        const response = await fetch(`/api/util/buy_booster?userid=${app.initDataUnsafe.user?.id}&boosterType=${boosterType}`);
+    const buyBooster = async (boosterType: any) => {
+        const response = await fetch(`/api/util/buy_booster?userid=${id}&boosterType=${boosterType}`);
         const data = await response.json();
         if (data.success) {
-            alert(`Booster ${boosterType} purchased until ${new Date(data.endTime).toLocaleTimeString()}`);
+            alert(`Бустер ${boosterType} приобретен до ${new Date(data.endTime).toLocaleTimeString()}`);
         } else {
-            alert(data.error || "Failed to purchase booster");
+            alert(data.error || "Не удалось приобрести бустер");
+        }
+    };
+
+    const resetEnergy = async () => {
+        const response = await fetch(`/api/util/reset_energy?userid=${id}`);
+        const data = await response.json();
+        if (data.success) {
+            alert(`Энергия сброшена до ${data.energy}`);
+        } else {
+            alert(data.error || "Не удалось сбросить энергию");
         }
     };
 
@@ -33,12 +44,12 @@ const Bonuses = () => {
                 <div className="p-4">
                     <div className="bg-gradient-to-r from-blue-900 to-gray-900 text-white rounded-lg p-4 mb-4">
                         <h2 className="text-lg font-bold text-center">🎁 Ежедневный чек-ин</h2>
-                        <button className="mt-4 bg-gradient-to-bl from-blue-900 to-blue-500 w-full text-white font-black py-2 px-4 rounded-lg">Получить 5000 ⭐</button>
+                        <button onClick={resetEnergy} className="mt-4 bg-gradient-to-bl from-blue-900 to-blue-500 w-full text-white font-black py-2 px-4 rounded-lg">Сбросить энергию</button>
                     </div>
 
                     {/* ДЖЕКПОТ */}
                     <div className="bg-gradient-to-r from-red-900 to-black text-white rounded-lg p-4 mb-4">
-                        <Slots userId ={id} />
+                        <Slots userId={id} />
                     </div>
 
                     <div className="bg-gradient-to-r from-green-900 to-black text-white rounded-lg p-4 mb-4">
