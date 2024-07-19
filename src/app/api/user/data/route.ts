@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from "@/db/supabase";
 
-export async function GET(req) {
+export async function GET(req: NextRequest) {
     try {
         // Получение id пользователя из запроса
         const { searchParams } = new URL(req.url);

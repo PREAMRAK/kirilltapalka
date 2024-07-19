@@ -7,7 +7,8 @@ import {webAppContext} from "@/app/context";
 import QueryStatsIcon from '@mui/icons-material/QueryStats'; // Stats
 import AdsClickIcon from '@mui/icons-material/AdsClick'; // Click
 import LightModeIcon from '@mui/icons-material/LightMode'; // Days
-import Diversity1Icon from '@mui/icons-material/Diversity1'; // Friends
+import Diversity1Icon from '@mui/icons-material/Diversity1';
+import Loader from "@/components/loader/loader"; // Friends
 
 const Profile = () => {
 
@@ -42,7 +43,7 @@ const Profile = () => {
     }, [app.initDataUnsafe.user?.id]);
 
     if (loading) {
-        return <div className="text-white">Loading...</div>;
+        return <Loader loading={loading} />;
     }
 
     return (

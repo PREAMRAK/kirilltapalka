@@ -3,22 +3,23 @@ import supabase from "@/db/supabase";
 
 const currentTime = new Date();
 
-async function decrease_points(user, points) {
+async function decrease_points(user: string, points: number): Promise<void> {
     try {
         const { data, error } = await supabase
             .from("users")
             .select("scores")
-            .eq("id", user);
+            .eq("id", user)
+            .single();
 
         if (error) {
             throw new Error(error.message);
         }
 
-        if (!data || data.length === 0) {
+        if (!data) {
             throw new Error("User not found");
         }
 
-        const currentScores = data[0].scores;
+        const currentScores: number = data.scores;
         if (currentScores < points) {
             throw new Error("Insufficient points");
         }
@@ -39,7 +40,15 @@ async function decrease_points(user, points) {
     }
 }
 
-export async function GET(req: NextRequest) {
+interface BoosterPrices {
+    [key: string]: number;
+}
+
+interface BoosterDurations {
+    [key: string]: number;
+}
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
     try {
         const { searchParams } = new URL(req.url);
         const userId = searchParams.get('userid');
@@ -49,13 +58,13 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
         }
 
-        const boosterPrices = {
+        const boosterPrices: BoosterPrices = {
             x2: 1000,
             x3: 2500,
             x5: 5000
         };
 
-        const boosterDurations = {
+        const boosterDurations: BoosterDurations = {
             x2: 30, // 30 minutes
             x3: 15, // 15 minutes
             x5: 5   // 5 minutes
@@ -70,8 +79,13 @@ export async function GET(req: NextRequest) {
 
         const endTime = new Date(currentTime.getTime() + boosterDurations[boosterType] * 60000);
 
-        const updateData = {};
-        updateData[`booster_${boosterType}`] = endTime.toISOString();
+        const boosterField = `booster_${boosterType}`;
+        const updateData: { [key: string]: string | null } = {
+            booster_x2: null,
+            booster_x3: null,
+            booster_x5: null,
+            [boosterField]: endTime.toISOString()
+        };
 
         const { error: updateError } = await supabase
             .from("users")

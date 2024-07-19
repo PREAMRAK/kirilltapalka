@@ -9,7 +9,7 @@ const Header = () => {
                 <ArrowBackIcon className="text-white hover:text-zinc-50"/>
             </Link>
             <div className="flex-grow text-center">
-                <img src="/logo.svg" alt="Logo" className="h-14 mx-auto" />
+                <img src="/images/logo.svg" alt="Logo" className="h-14 mx-auto" />
             </div>
             <div className="w-10"></div> {/* Placeholder to balance the space */}
         </div>

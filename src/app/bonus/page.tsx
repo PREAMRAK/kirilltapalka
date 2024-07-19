@@ -1,11 +1,26 @@
 "use client";
 
-import { useContext } from "react";
+import {useContext, useEffect, useState} from "react";
 import { webAppContext } from "../context";
 import Bonus from "@/components/screens/bonus/bonus"
+import CoinMania from "@/components/screens/main/main";
+import Loader from "@/components/loader/loader";
+import MobileDetect from "mobile-detect";
 
 export default function Home() {
     const app = useContext(webAppContext);
+    const [isMobile, setIsMobile] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const md = new MobileDetect(window.navigator.userAgent);
+        setIsMobile(!!md.mobile());
+        setLoading(false);
+    }, []);
+
+    if (loading) {
+        return <Loader loading={loading} />;
+    }
 
     return (
         <>
@@ -20,7 +35,11 @@ export default function Home() {
             {/*    "loading"*/}
             {/*)}*/}
 
-            <Bonus />
+            {app.version ? (
+                <Bonus />
+            ) : (
+                <Loader loading={loading} />
+            )}
         </>
     );
 }

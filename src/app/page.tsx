@@ -21,7 +21,7 @@ export default function Home() {
     }, []);
 
     if (loading) {
-        return <Loader />;
+        return <Loader loading={loading} />;
     }
 
     // if (!isMobile) {
@@ -43,7 +43,7 @@ export default function Home() {
             {app.version ? (
                 <CoinMania />
             ) : (
-                <Loader />
+                <Loader loading={loading} />
             )}
         </>
     );

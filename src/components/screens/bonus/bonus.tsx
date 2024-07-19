@@ -1,10 +1,15 @@
-import React, { useContext } from 'react';
+import React, {useContext, useEffect} from 'react';
 import Header from "@/components/header/header";
 import { webAppContext } from "@/app/context";
 import Slots from "@/components/screens/bonus/slots/Slots";
 
 const Bonuses = () => {
     const app = useContext(webAppContext);
+
+    const id = app.initDataUnsafe.user?.id
+    useEffect(() => {
+        console.log("App data:", app);
+    }, [app]);
 
     const buyBooster = async (boosterType) => {
         const response = await fetch(`/api/util/buy_booster?userid=${app.initDataUnsafe.user?.id}&boosterType=${boosterType}`);
@@ -33,7 +38,7 @@ const Bonuses = () => {
 
                     {/* ДЖЕКПОТ */}
                     <div className="bg-gradient-to-r from-red-900 to-black text-white rounded-lg p-4 mb-4">
-                        <Slots userId={app.initDataUnsafe.user?.id} />
+                        <Slots userId ={id} />
                     </div>
 
                     <div className="bg-gradient-to-r from-green-900 to-black text-white rounded-lg p-4 mb-4">
