@@ -4,9 +4,7 @@ import React, { useContext, useEffect, useState, useRef, useCallback } from 'rea
 import { webAppContext } from "@/app/context";
 import supabase from "@/db/supabase";
 import Loader from "@/components/loader/loader";
-
 import { Button, Link } from "@nextui-org/react";
-
 import TapIcon from '@mui/icons-material/TouchApp';
 import BonusIcon from '@mui/icons-material/CardGiftcard';
 import TasksIcon from '@mui/icons-material/Assignment';
@@ -309,6 +307,25 @@ const CoinMania: React.FC = () => {
         };
     }, []);
 
+    const id = app.initDataUnsafe.user?.id
+
+    const resetEnergy = async () => {
+        try {
+            const response = await fetch(`/api/util/reset_energy?userid=${id}`);
+            const data = await response.json();
+            if (data.success) {
+                alert(`Энергия сброшена до ${data.energy}`);
+                console.log(`Setting energy to ${data.energy}`); // Add logging to confirm value
+                setEnergy(data.energy);  // Immediately set the new energy value
+            } else {
+                alert(data.error || "Не удалось сбросить энергию");
+            }
+        } catch (error) {
+            alert("Произошла ошибка при сбросе энергии");
+            console.error("Error resetting energy:", error);
+        }
+    };
+
     if (loading) {
         return <Loader loading={loading} />;
     }
@@ -357,20 +374,12 @@ const CoinMania: React.FC = () => {
                 </div>
 
                 {/* Score and associated components */}
-                <div className="fixed top-24 mx-auto w-full z-40 px-4">
+                <div className="fixed top-24 mx-auto w-full z-100 px-4">
                     <div className="text-center">
 
                         <div className="flex justify-center items-center">
                             <img src='/images/coin.png' width={30} alt="Coin" className="mr-2" />
                             <span className="text-3xl font-bold">{points.toLocaleString()}</span>
-                        </div>
-
-                        <div className="mt-2 flex justify-center items-center">
-                            <img src='/images/trophy.png' width={24} height={24} alt="Trophy" className="mr-2" />
-                            <a href="https://t.me/vnvnc_spb" target="_blank" rel="noopener noreferrer"
-                               className="text-xl">
-                                Gold
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -439,26 +448,30 @@ const CoinMania: React.FC = () => {
                 </div>
 
                 {/* Блок с энергией */}
-                <div className="fixed bottom-32 w-full z-28">
-                    <div className="items-center text-center">
-                        <span className="text-center mx-auto text-white text-xl font-bold">
+                <div className="fixed bottom-36 w-full z-50 ">
+
+                    <div className="justify-between flex mt-4 mx-2">
+                        <span className="text-center text-white text-xl font-bold">
                             ⚡️{energy} / {userData?.maxenergy ?? 1000}
                         </span>
+                        <button onClick={resetEnergy}
+                                className="bg-gradient-to-bl z-9999 from-yellow-400 to-yellow-600 text-sm text-white font-black p-1 rounded-md">
+                            Сбросить энергию
+                        </button>
                     </div>
 
                     <div className="w-full bg-[#f9c035] rounded-md items-center px-2 my-2">
                         <div
                             className="bg-gradient-to-r from-[#f3c45a] to-[#fffad0] opacity-10 h-2 rounded-md"
-                            style={{ width: `${(energy / (userData?.maxenergy ?? 1000)) * 100}%` }}
+                            style={{width: `${(energy / (userData?.maxenergy ?? 1000)) * 100}%`}}
                         >
                         </div>
                     </div>
                 </div>
 
-
                 {/* Нижний блок меню */}
                 <div className={'z-50 w-full fixed bottom-0'}>
-                    <Footer activeTab='Home'/>
+                    <Footer activeTab={'Home'}/>
                 </div>
             </div>
         </div>

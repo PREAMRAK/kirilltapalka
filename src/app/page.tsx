@@ -3,7 +3,7 @@
 import { useContext, useEffect, useState } from "react";
 import MobileDetect from "mobile-detect";
 import { webAppContext } from "./context";
-import CoinMania from "@/components/screens/main/main";
+import CoinMania from "@/components/screens_new/main/main";
 import { Image } from "@nextui-org/image";
 import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
 import Loader from '@/components/loader/loader'

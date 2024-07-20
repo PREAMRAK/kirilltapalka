@@ -1,0 +1,241 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { XCircle } from 'lucide-react';
+import Footer from "@/components/footer/Footer";
+import { webAppContext } from "@/app/context";
+import axios from 'axios';
+
+const CoinManiaBonusPage = () => {
+    const [activeTab, setActiveTab] = useState('Bonus');
+    const [activeBooster, setActiveBooster] = useState(null);
+    const [showTasks, setShowTasks] = useState(false);
+    const [taskStatus, setTaskStatus] = useState({});
+    const [loadingTasks, setLoadingTasks] = useState({});
+    const app = useContext(webAppContext);
+
+    const tabs = [
+        { name: 'Home', icon: '🏠', color: '#f8cc46' },
+        { name: 'Game', icon: '🎮', color: '#5c35c5' },
+        { name: 'Bonus', icon: '🎁', color: '#842221' },
+        { name: 'Friends', icon: '👥', color: '#2596be' },
+    ];
+
+    const boosters = [
+        { multiplier: 2, duration: 30, cost: 1000, color: '#f8cc46' },
+        { multiplier: 3, duration: 15, cost: 2500, color: '#ff7f50' },
+        { multiplier: 5, duration: 5, cost: 5000, color: '#ff4500' },
+    ];
+
+    const tasks = [
+        { platform: 'Telegram', channels: ['Маленькая Виновница', 'VNVNC', 'ANGAR'], reward: 5000, duration: 15, color: '#0088cc' },
+        { platform: 'Instagram', channels: ['Маленькая Виновница', 'VNVNC', 'ANGAR'], reward: 10000, duration: 240, color: '#c13584' },
+    ];
+
+    const activateBooster = async (multiplier) => {
+        try {
+            const boosterType = `x${multiplier}`;
+            const response = await axios.get(`/api/util/buy_booster?userid=${app.initDataUnsafe.user?.id}&boosterType=${boosterType}`);
+            const data = response.data;
+            if (data.success) {
+                alert(`Бустер ${boosterType} приобретен до ${new Date(data.endTime).toLocaleTimeString()}`);
+                setActiveBooster({ multiplier, timeLeft: boosters.find(b => b.multiplier === multiplier).duration * 60 });
+            } else {
+                alert(data.error || "Не удалось приобрести бустер");
+            }
+        } catch (error) {
+            console.error("Failed to buy booster:", error);
+        }
+    };
+
+    const subscribeToChannel = async (platform, channel) => {
+        try {
+            setLoadingTasks(prev => ({ ...prev, [`${platform}-${channel}`]: true }));
+            await axios.post('/api/tasks/update', {
+                taskId: `${platform}-${channel}`,
+                userId: app.initDataUnsafe.user?.id,
+                name: channel,
+                platform,
+                reward: tasks.find(t => t.platform === platform).reward,
+                link: ''
+            });
+            setTaskStatus(prev => ({
+                ...prev,
+                [`${platform}-${channel}`]: { status: 'checking', timeLeft: tasks.find(t => t.platform === platform).duration * 60 }
+            }));
+        } catch (error) {
+            console.error("Failed to update task:", error);
+            setLoadingTasks(prev => ({ ...prev, [`${platform}-${channel}`]: false }));
+        }
+    };
+
+    useEffect(() => {
+        const fetchTaskStatuses = async () => {
+            try {
+                const { data } = await axios.get(`/api/tasks/update?userId=${app.initDataUnsafe.user?.id}`);
+                const statuses = data.tasks.reduce((acc, task) => {
+                    acc[task.id] = task.status;
+                    return acc;
+                }, {});
+                setTaskStatus(statuses);
+            } catch (error) {
+                console.error("Failed to fetch task statuses:", error);
+            }
+        };
+
+        fetchTaskStatuses();
+    }, [app.initDataUnsafe.user?.id]);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (activeBooster) {
+                setActiveBooster(prev => {
+                    if (prev.timeLeft > 0) {
+                        return { ...prev, timeLeft: prev.timeLeft - 1 };
+                    } else {
+                        return null;
+                    }
+                });
+            }
+
+            setTaskStatus(prev => {
+                const updated = { ...prev };
+                Object.keys(updated).forEach(key => {
+                    if (updated[key].status === 'checking') {
+                        if (updated[key].timeLeft > 0) updated[key].timeLeft -= 1;
+                        else updated[key].status = 'completed';
+                    }
+                });
+                return updated;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [activeBooster]);
+
+    const buttonStyle = {
+        transition: 'all 0.3s ease',
+        transform: 'scale(1)',
+        ':active': {
+            transform: 'scale(0.98)',
+        }
+    };
+
+    const boosterStyle = (booster) => ({
+        ...buttonStyle,
+        width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '20px',
+        fontSize: '1.2rem', fontWeight: 'bold', border: 'none', cursor: 'pointer',
+        background: activeBooster && activeBooster.multiplier === booster.multiplier
+            ? `linear-gradient(145deg, ${booster.color}, ${booster.color}aa)`
+            : `linear-gradient(145deg, ${booster.color}aa, ${booster.color}55)`,
+        color: '#ffffff',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    });
+
+    const taskButtonStyle = (task, status, isMain = false) => ({
+        ...buttonStyle,
+        width: '100%',
+        padding: '10px',
+        marginBottom: '10px',
+        borderRadius: '15px',
+        fontSize: isMain ? '1.1rem' : '1rem',
+        fontWeight: 'bold',
+        border: 'none',
+        cursor: status === 'completed' ? 'default' : 'pointer',
+        background:
+            status === 'completed' ? '#4a4a4a' :
+                status === 'checking' ? `linear-gradient(145deg, ${task.color}dd, ${task.color})` :
+                    `linear-gradient(145deg, ${task.color}, ${task.color}dd)`,
+        color: '#f0f0f0',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        gridColumn: isMain ? 'span 2' : 'span 1',
+    });
+
+    const infoBoxStyle = {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderLeft: '4px solid #f8cc46',
+        padding: '15px',
+        marginBottom: '25px',
+        borderRadius: '0 10px 10px 0',
+    };
+
+    return (
+        <div style={{height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(to top, #842221, black)', fontFamily: 'Arial, sans-serif'}}>
+            <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', overflowY: 'auto'}}>
+
+                <div style={{backgroundColor: 'rgba(255, 255, 255, 0.07)', backdropFilter: 'blur(10px)', borderRadius: '25px', border: '1px solid rgba(255, 255, 255, 0.18)', width: '100%', maxWidth: '500px', padding: '25px', marginBottom: '30px'}}>
+                    <h2 style={{fontSize: '2rem', fontWeight: 'bold', color: '#f0f0f0', marginBottom: '20px'}}>🎁 Бустеры</h2>
+                    {boosters.map((booster) => {
+                        const isActive = activeBooster && activeBooster.multiplier === booster.multiplier;
+                        const minutes = isActive ? Math.floor(activeBooster.timeLeft / 60) : 0;
+                        const seconds = isActive ? activeBooster.timeLeft % 60 : 0;
+
+                        return (
+                            <button key={booster.multiplier} onClick={() => activateBooster(booster.multiplier)} style={boosterStyle(booster)}>
+                                {isActive
+                                    ? `x${booster.multiplier} - ${minutes}:${seconds.toString().padStart(2, '0')}`
+                                    : `Купить x${booster.multiplier} на ${booster.duration} минут (${booster.cost}⭐️)`
+                                }
+                            </button>
+                        );
+                    })}
+                    <div style={infoBoxStyle}>
+                        <p style={{fontSize: '0.9rem', color: '#f0f0f0', lineHeight: '1.4'}}>
+                            Бустеры временно увеличивают количество монет, получаемых за каждое нажатие в разделе 🏠 Home. x2 удваивает, x3 утраивает, а x5 увеличивает в пять раз ваш доход. Только один бустер может быть активен одновременно.
+                        </p>
+                    </div>
+                </div>
+
+                <button onClick={() => setShowTasks(true)} style={{...buttonStyle, backgroundColor: 'rgba(255, 255, 255, 0.035)', backdropFilter: 'blur(10px)', borderRadius: '25px', border: '1px solid rgba(255, 255, 255, 0.18)', width: '100%', maxWidth: '500px', padding: '20px', fontSize: '1.5rem', fontWeight: 'bold', color: '#f0f0f0', cursor: 'pointer', marginBottom: '30px'}}>
+                    ✅ Задания
+                </button>
+            </div>
+
+            {/* Navigation Bar */}
+            {/* Нижний блок меню */}
+            <div className={'z-50 w-full fixed bottom-0'}>
+                <Footer activeTab='Bonus'/>
+            </div>
+
+            {/* Tasks Pop-up */}
+            {showTasks && (
+                <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000}}>
+                    <div style={{backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(10px)', borderRadius: '25px', border: '1px solid rgba(255, 255, 255, 0.18)', width: '95%', maxWidth: '500px', maxHeight: '90%', overflowY: 'auto', padding: '25px', color: '#f0f0f0'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                            <h2 style={{fontSize: '2rem', fontWeight: 'bold'}}>✅ Задания</h2>
+                            <button onClick={() => setShowTasks(false)} style={{...buttonStyle, background: 'none', border: 'none', color: '#f0f0f0', cursor: 'pointer'}}><XCircle size={30} /></button>
+                        </div>
+                        <div style={infoBoxStyle}>
+                            <p style={{fontSize: '0.9rem', lineHeight: '1.4'}}>Для проверки подписки на каждый аккаунт мы проведем проверку. Для Telegram это займет 15 минут. Для Instagram может потребоваться до 24 часов. Вернитесь в этот раздел позже, чтобы проверить прогресс верификации. В случае успеха вы получите награды на баланс Coinmania.</p>
+                        </div>
+                        {tasks.map((task) => (
+                            <div key={task.platform} style={{marginBottom: '25px'}}>
+                                <h3 style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '15px'}}>{task.platform}</h3>
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px'}}>
+                                    {task.channels.map((channel, index) => {
+                                        const status = taskStatus[`${task.platform}-${channel}`]?.status || 'pending';
+                                        const timeLeft = taskStatus[`${task.platform}-${channel}`]?.timeLeft || 0;
+                                        const minutes = Math.floor(timeLeft / 60);
+                                        const seconds = timeLeft % 60;
+                                        const isMain = index === 0;
+                                        return (
+                                            <button key={channel} onClick={() => subscribeToChannel(task.platform, channel)} style={taskButtonStyle(task, status, isMain)} disabled={status === 'completed' || status === 'checking'}>
+                                                {status === 'completed' ? `✅ ${task.reward / 1000}K⭐️` : status === 'checking' ? `${minutes}:${seconds.toString().padStart(2, '0')}` : (
+                                                    <>
+                                                        {channel}
+                                                        <br />
+                                                        <span style={{fontSize: '0.8em'}}>{task.reward / 1000}K⭐️</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default CoinManiaBonusPage;
